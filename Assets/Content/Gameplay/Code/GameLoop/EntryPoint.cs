@@ -31,7 +31,7 @@ namespace Content.Gameplay.Code.GameLoop
                 }
                 else
                 {
-                    Debug.LogError(string.Format("Could not resolve all Firebase dependencies: {0}",dependencyStatus));
+                    Debug.LogError($"Could not resolve all Firebase dependencies: {dependencyStatus}");
                 }
             });
         }

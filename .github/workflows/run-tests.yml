@@ -1,0 +1,64 @@
+﻿name: Run Unity Tests
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  run-tests:
+    name: Run Unity Test Suite
+    runs-on: ubuntu-latest
+
+    env:
+      UNITY_VERSION: 2022.3.36f1
+      UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Unity Editor
+        uses: game-ci/unity-installer@v3
+        with:
+          unityVersion: ${{ env.UNITY_VERSION }}
+
+      - name: Activate Unity License
+        uses: game-ci/unity-activate@v3
+        with:
+          unityLicense: ${{ secrets.UNITY_LICENSE }}
+
+      - name: Run Unity Tests
+        run: |
+          mkdir -p TestResults
+          /opt/unity/Editor/Unity \
+            -projectPath . \
+            -runTests \
+            -testPlatform editmode \
+            -testResults TestResults/editmode-results.xml \
+            -logFile /dev/stdout \
+            -batchmode \
+            -quit
+
+          /opt/unity/Editor/Unity \
+            -projectPath . \
+            -runTests \
+            -testPlatform playmode \
+            -testResults TestResults/playmode-results.xml \
+            -logFile /dev/stdout \
+            -batchmode \
+            -quit
+        shell: bash
+
+      - name: Upload Test Results
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-results
+          path: TestResults/*.xml
+
+      - name: Deactivate Unity License
+        if: always()
+        uses: game-ci/unity-return-license@v3
