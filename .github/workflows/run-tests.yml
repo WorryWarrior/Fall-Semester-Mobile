@@ -25,6 +25,7 @@ jobs:
         uses: kuler90/setup-unity@v1.1.0
         with:
           unity-version: ${{ env.UNITY_VERSION }}
+          unity-modules: android
 
       - name: Activate Unity License
         uses: game-ci/unity-activate@v2.0.0
