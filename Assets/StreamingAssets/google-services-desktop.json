@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "958026867908",
+    "project_id": "fallsemestermobile",
+    "storage_bucket": "fallsemestermobile.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:958026867908:android:3c410b43cbbd92e5ca5591",
+        "android_client_info": {
+          "package_name": "com.defaultcompany.fallsemestermobile"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCWi7ZBgxCSycexD5W9686k7WzSTamK49s"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
