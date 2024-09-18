@@ -92,7 +92,7 @@ jobs:
             Library-build-
             Library-
 
-      - uses: game-ci/unity-builder@v2
+      - uses: game-ci/unity-builder@v4
         with:
           targetPlatform: Android
 
