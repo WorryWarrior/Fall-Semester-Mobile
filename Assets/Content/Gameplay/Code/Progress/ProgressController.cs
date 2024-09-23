@@ -9,7 +9,7 @@ namespace Content.Gameplay.Code.Progress
     public class ProgressController : NetworkBehaviour
     {
         [SerializeField] private float progressLimit = 100f;
-        [SerializeField] private float progressInitialValue = 50f;
+        [field: SerializeField] public float ProgressInitialValue { get; private set; } = 50f;
         [SerializeField] private Volume postProcessVolume;
 
         private float _progress;
@@ -62,7 +62,7 @@ namespace Content.Gameplay.Code.Progress
 
         public void Reset()
         {
-            Progress = progressInitialValue;
+            Progress = ProgressInitialValue;
         }
     }
 }

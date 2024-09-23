@@ -33,7 +33,7 @@ namespace Tests.PlayMode
 
             yield return null;
 
-            Assert.AreEqual(_progressController.Progress, _progressController.Progress,
+            Assert.AreEqual(_progressController.ProgressInitialValue, _progressController.Progress,
                 "Progress should be equal to progressInitialValue after Reset.");
         }
     }
