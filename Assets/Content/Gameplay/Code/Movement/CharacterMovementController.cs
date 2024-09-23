@@ -1,8 +1,9 @@
-﻿using UnityEngine;
+﻿using Content.Gameplay.Code.Movement.Contracts;
+using UnityEngine;
 
 namespace Content.Gameplay.Code.Movement
 {
-    public class CharacterMovementController : MonoBehaviour
+    public class CharacterMovementController : MovementControllerBase
     {
         private const float INPUT_MAGNITUDE_THRESHOLD = 0.01f;
 
@@ -10,11 +11,15 @@ namespace Content.Gameplay.Code.Movement
         [SerializeField] private float movementFactor = 1f;
         [SerializeField, Range(0f, 1f)] private float minInputMagnitude = 0.35f;
 
-        public float MovementSpeed { get; private set; }
+        private void Update()
+        {
+            if (!isServer)
+                return;
 
-        public Vector2 MovementDirection { get; private set; }
+            Tick(InputJoystick.Direction);
+        }
 
-        public void Tick(Vector2 dir)
+        private void Tick(Vector2 dir)
         {
             MovementDirection = dir;
             MovementSpeed = MovementDirection.magnitude > INPUT_MAGNITUDE_THRESHOLD ?

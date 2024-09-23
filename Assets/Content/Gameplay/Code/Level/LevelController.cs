@@ -1,13 +1,13 @@
-﻿using Content.Gameplay.Code.Analytics;
-using Content.Gameplay.Code.Camera;
-using Content.Gameplay.Code.Movement;
+﻿using Content.Gameplay.Code.Camera;
+using Content.Gameplay.Code.Progress;
+using Content.Gameplay.Code.UI;
+using Mirror;
 using UnityEngine;
 using UnityEngine.Rendering;
-using UnityEngine.Rendering.Universal;
 
 namespace Content.Gameplay.Code.Level
 {
-    public class LevelController : MonoBehaviour
+    public class LevelController : NetworkBehaviour
     {
         [Header("Player")]
         [SerializeField] private Transform playerPosition;
@@ -15,41 +15,54 @@ namespace Content.Gameplay.Code.Level
 
         [Header("Camera")]
         [SerializeField] private CameraController cameraController;
-        [SerializeField] private Volume postProcessVolume;
 
         [Header("Progress")]
         [SerializeField] private ProgressController progressController;
-        [SerializeField] private float progressInitialValue = 50f;
         [SerializeField] private float progressDelta = 0.01f;
-        [SerializeField] private float progressLimit = 100f;
-
-        [Header("Input")]
-        [SerializeField] private Joystick joystick;
 
         [Header("Ambience")]
         [SerializeField] private Vector2Int areaDimensions = Vector2Int.one;
         [SerializeField] private float grassStep = 0.25f;
         [SerializeField] private GameObject[] grassPrefabs;
 
-        private CharacterMovementController _characterMovementController;
+        [Header("UI")]
+        [SerializeField] private RestartView restartView;
+
         private VolumeProfile _postProcessProfile;
+
+        public bool IsServerInitialized { get; set; }
+        private bool isInitialized = false;
+        private bool isRunning = true;
 
         public void Initialize()
         {
-            CreateProgressModules();
-            CreateAmbience();
-            CreatePlayer();
+            restartView.RestartButtonPressed = Restart;
+            restartView.Initialize();
 
+            CreateAmbience();
         }
 
+        [Server]
         private void Update()
         {
-            _characterMovementController.Tick(joystick.Direction);
-            progressController.Tick(progressDelta, progressLimit);
-        }
+            if (IsServerInitialized)
+            {
+                if (!isInitialized)
+                {
+                    CreateProgressModules();
+                    isInitialized = true;
+                }
 
+                if (isRunning)
+                {
+                    progressController.Tick(progressDelta);
+                }
+            }
+        }
         private void CreateAmbience()
         {
+            Random.InitState(42);
+            
             GameObject grassParent = new GameObject("Ambience_Grass");
             grassParent.transform.SetParent(transform);
 
@@ -68,28 +81,42 @@ namespace Content.Gameplay.Code.Level
             }
         }
 
-        private void CreatePlayer()
+        public GameObject CreatePlayer()
         {
             GameObject playerInstance = Instantiate(playerPrefab, playerPosition);
 
-            cameraController.SetFollowTarget(playerInstance.transform);
+            //cameraController.SetFollowTarget(playerInstance.transform);
 
-            _characterMovementController = playerInstance.GetComponent<CharacterMovementController>();
+            return playerInstance;
         }
 
+        private void Restart()
+        {
+            isRunning = true;
+            progressController.Reset();
+            restartView.Hide();
+        }
+
+        [Server]
         private void CreateProgressModules()
         {
-            _postProcessProfile = postProcessVolume.profile;
-            progressController.OnProgressChanged += ProcessProgressChange;
-            progressController.Progress = progressInitialValue;
+            progressController.Reset();
+            progressController.OnProgressEmptyReached += OnProgressEmpty;
+            progressController.OnProgressLimitReached += OnProgressLimit;
         }
 
-        private void ProcessProgressChange(float value)
+        [Server]
+        private void OnProgressEmpty()
         {
-            if (_postProcessProfile.TryGet(out ColorAdjustments colorAdjustments))
-            {
-                colorAdjustments.saturation.SetValue(new FloatParameter(-value));
-            }
+            isRunning = false;
+            restartView.Show(true, true);
+        }
+
+        [Server]
+        private void OnProgressLimit()
+        {
+            isRunning = false;
+            restartView.Show(false, true);
         }
     }
 }
